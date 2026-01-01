@@ -120,9 +120,11 @@ The API is configured for production deployment with CORS support and environmen
 3. Connect your GitHub repository
 4. Configure:
    - **Build Command**: `pip install -r requirements.txt && playwright install chromium && playwright install-deps`
-   - **Start Command**: `python app.py`
+   - **Start Command**: `uvicorn app:app --host 0.0.0.0 --port $PORT` (or use Procfile)
    - **Environment**: Python 3
 5. Deploy!
+
+**⚠️ Troubleshooting**: If your app doesn't respond, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions. Most importantly, check your Render dashboard logs!
 
 **Railway:**
 1. Create account at [railway.app](https://railway.app)

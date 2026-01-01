@@ -191,6 +191,12 @@ def read_root():
     return {"message": "TikTok Collection Scraper API", "version": "1.0.0"}
 
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring and keep-alive pings"""
+    return {"status": "healthy", "service": "TikTok Collection Scraper API"}
+
+
 @app.post("/scrape-collection", response_model=CollectionResponse)
 def scrape_collection(request: CollectionRequest):
     """
