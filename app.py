@@ -8,7 +8,11 @@ import logging
 import os
 from typing import List
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    force=True
+)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="TikTok Collection Scraper", version="1.0.0")
@@ -37,14 +41,19 @@ def extract_collection_data(url: str) -> dict:
     """
     Scrapes TikTok collection page to extract collection name, owner, and post URLs.
     """
+    logger.info("Initializing Playwright...")
     with sync_playwright() as p:
+        logger.info("Playwright context manager started")
         # Launch browser in headless mode
+        logger.info("Launching Chromium browser...")
         browser = p.chromium.launch(headless=True)
+        logger.info("Browser launched successfully")
         context = browser.new_context(
             user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             viewport={'width': 1920, 'height': 1080}
         )
         page = context.new_page()
+        logger.info("New page created")
         
         try:
             # Navigate to the collection URL
@@ -203,20 +212,27 @@ def scrape_collection(request: CollectionRequest):
     Scrapes a TikTok collection URL and returns collection name, owner, and post URLs.
     """
     url = request.url
+    logger.info(f"Received scrape request for URL: {url}")
     
     # Validate URL
     if not url.startswith('https://www.tiktok.com/@'):
+        logger.warning(f"Invalid URL format: {url}")
         raise HTTPException(status_code=400, detail="Invalid TikTok collection URL format")
     
     if '/collection/' not in url:
+        logger.warning(f"URL is not a collection: {url}")
         raise HTTPException(status_code=400, detail="URL must be a TikTok collection URL")
     
     try:
+        logger.info(f"Starting to extract collection data from: {url}")
         data = extract_collection_data(url)
+        logger.info(f"Successfully extracted data: {len(data.get('posts', []))} posts found")
         return CollectionResponse(**data)
     except ValueError as e:
+        logger.error(f"ValueError during scraping: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Exception during scraping: {type(e).__name__}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to scrape collection: {str(e)}")
 
 
